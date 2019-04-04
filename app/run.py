@@ -26,11 +26,11 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/Disaster.db')
+df = pd.read_sql_table('InsertTableName', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/Disaster.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -39,12 +39,27 @@ model = joblib.load("../models/your_model_name.pkl")
 def index():
     
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    cats = df.loc[df['related'] >= 1.0]
+    cats_counts = []
+    cats_names = []
+    for c in df.iloc[:,5:].columns:
+        cats_counts.append(cats[c].sum())
+        cats_names.append(c)
+    cats_counts, cats_names = (list(t) for t in zip(*sorted(zip(cats_counts, cats_names))))
+
+    social = df.loc[df['related'] >= 1.0]
+    social2 = df.loc[df['genre'] == 'social']
+    soc_cats_counts = []
+    soc_cats_names = []
+    for c in social2.iloc[:,5:].columns:
+        soc_cats_counts.append(social2[c].sum())
+        soc_cats_names.append(c)
+    soc_cats_counts, soc_cats_names = (list(t) for t in zip(*sorted(zip(soc_cats_counts, soc_cats_names))))
+    
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
@@ -62,6 +77,38 @@ def index():
                 'xaxis': {
                     'title': "Genre"
                 }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=cats_names,
+                    y=cats_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Categories"
+                }
+            }
+        },
+        {
+            "data": [
+                {
+                    "type": "pie",
+                    "labels": soc_cats_names,
+                    "values": soc_cats_counts
+                }
+            ],
+            "layout": {
+                "title": "Distribution of Social Media Messages",
+                "width": 1000,
+                "height": 1000
             }
         }
     ]

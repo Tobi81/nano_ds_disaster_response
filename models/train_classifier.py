@@ -12,7 +12,14 @@ from nltk.stem import WordNetLemmatizer
 
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.ensemble import RandomForestClassifier #0.4 0.28 0.28 16500
+from sklearn.linear_model import RidgeClassifierCV #
+from sklearn.tree import DecisionTreeClassifier #0.34 0.34 0.34 16300
+from sklearn.ensemble import ExtraTreesClassifier #0.39 0.28 0.28 16100
+from sklearn.neural_network import MLPClassifier #
+from sklearn.neighbors import KNeighborsClassifier #0.39 0.28 0.27 16600
+
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -87,26 +94,25 @@ def build_model():
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+        ('clf', MultiOutputClassifier(DecisionTreeClassifier()))
     ])
     
+    #print(pipeline.get_params())
+    
     # define parameters for grid search
-   # parameters = {
-        #'vect__ngram_range': ((1, 1), (1, 2)),
-        #'vect__max_df': (0.5, 0.75, 1.0),
-        #'vect__max_features': (None, 5000, 10000),
-        #'tfidf__use_idf': (True, False),
-        #'clf__estimator__bootstrap': (True, False),
-        #'clf__estimator__criterion': ('gini', 'entropy'),
-        #'clf__estimator__n_estimators': [10, 50, 100, 200],
-        #'clf__estimator__min_samples_leaf': [1, 2, 4],
-        #'clf__estimator__min_samples_split': [2, 4, 6]
-    #}
+    parameters = {
+        'vect__ngram_range': ((1, 1), (1, 2)),
+        'vect__max_df': (0.5, 0.75, 1.0),
+        'vect__max_features': (None, 500, 1000),
+        'tfidf__use_idf': (True, False),
+        'clf__estimator__min_samples_leaf': (1, 2, 4),
+        'clf__estimator__min_samples_split': (2, 4, 6)
+    }
 
     # apply grid search to pipeline
-    #cv = GridSearchCV(pipeline, param_grid=parameters)
+    cv = GridSearchCV(pipeline, param_grid=parameters)
     
-    return pipeline
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test):
